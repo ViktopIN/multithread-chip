@@ -23,11 +23,10 @@ class Storage {
     
     func pop() -> Chip {
         condition.lock()
-        while !isAvaliable {
+        while isEmpty {
+            print("Ожидание экземпяра")
             condition.wait()
-            print("Ждет экземпляра")
         }
-        isAvaliable = false
         condition.unlock()
         
         return storage.removeLast()
@@ -45,7 +44,9 @@ class GeneratingThread: Thread {
     override func main() {
         timer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(getChipCopy), userInfo: nil, repeats: true)
         RunLoop.current.add(timer, forMode: .common)
-        RunLoop.current.run(until: Date.init(timeIntervalSinceNow: 20.0))
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 20.0))
+        
+        storage.isAvaliable = false
     }
     
     @objc func getChipCopy() {
@@ -64,7 +65,9 @@ class WorkingThread: Thread {
         repeat {
             storage.pop().sodering()
             print("Припайка микросхемы")
-        } while storage.isEmpty || storage.isAvaliable
+        } while storage.isEmpty == false || storage.isAvaliable
+        
+        
     }
 }
 
@@ -74,5 +77,4 @@ var workingThread = WorkingThread(storage: storage)
 
 generationThread.start()
 workingThread.start()
-sleep(20)
-generationThread.cancel()
+workingThread.cancel()

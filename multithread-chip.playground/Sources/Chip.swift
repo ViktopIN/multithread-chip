@@ -2,9 +2,6 @@ import Foundation
 
 public struct Chip {
     
-    var generatingThread: Thread?
-    var mainThread: Thread?
-    
     public enum ChipType: UInt32 {
         case small = 1
         case medium
